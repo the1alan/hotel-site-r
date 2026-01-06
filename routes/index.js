@@ -1,19 +1,27 @@
 var express = require('express');
 var router = express.Router();
 
-/* Главная страница гостиницы */
-router.get('/', function(req, res, next) {
-  res.send('<h1>Гостиница Undefined</h1>');
+/* Главная */
+router.get('/', function(req, res) {
+  res.render('index', {
+    title: 'Гостевой дом у Рузанны'
+  });
 });
 
-/* Страница номеров */
-router.get('/rooms', function(req, res, next) {
-  res.send('<h1>Номера гостиницы Undefined</h1>');
+/* Номера */
+router.get('/rooms', function(req, res) {
+  res.render('hotel', {
+    title: 'Номера',
+    desc: 'Комфортные номера для проживания гостей'
+  });
 });
 
-/* Страница контактов */
-router.get('/contacts', function(req, res, next) {
-  res.send('<h1>Контакты гостиницы Undefined</h1>');
+/* Контакты */
+router.get('/contacts', function(req, res) {
+  res.render('hotel', {
+    title: 'Контакты',
+    desc: 'Свяжитесь с нами удобным способом'
+  });
 });
 
 module.exports = router;
