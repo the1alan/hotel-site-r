@@ -3,7 +3,11 @@ var router = express.Router();
 
 /* Главная */
 router.get('/', function(req, res) {
-  res.send('<h1>Гостиница</h1>');
+  res.send(`
+    <h1>Гостиница</h1>
+    <a href="/rooms">Номера</a> | 
+    <a href="/contacts">Контакты</a>
+  `);
 });
 
 /* GET номера Mongoose */
@@ -47,7 +51,12 @@ router.delete('/rooms/:id', async function(req, res) {
 
 /* Контакты */
 router.get('/contacts', function(req, res) {
-  res.send('<h1>Контакты</h1>');
+  res.send(`
+    <h1>Контакты</h1>
+    <p>📞 +370 123 456 789</p>
+    <p>📧 info@hotel.lt</p>
+    <a href="/">← Главная</a>
+  `);
 });
 
 module.exports = router;
