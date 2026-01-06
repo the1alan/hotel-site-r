@@ -1,28 +1,24 @@
 var express = require('express');
 var router = express.Router();
 
-/* Главная страница гостиницы */
-router.get('/', function(req, res, next) {
-  res.send('<h1>Гостиница Undefined</h1>');
+/* Главная */
+router.get('/', function(req, res) {
+  res.send('<h1>Гостиница</h1>');
 });
 
-/* Номера через Mongoose (GET) */
-router.get('/rooms', async function (req, res, next) {
+/* GET номера Mongoose */
+router.get('/rooms', async function(req, res) {
   try {
     var Room = require('../models/room.js').Room;
     const roomsList = await Room.find({}).sort({ created: -1 });
-    
-    res.render('hotel', {
-      title: 'Номера (Mongoose)',
-      rooms: roomsList
-    });
-  } catch (err) {
+    res.render('hotel', { title: 'Номера (Mongoose)', rooms: roomsList });
+  } catch(err) {
     res.status(500).send('Ошибка Mongoose: ' + err);
   }
 });
 
-/* Создать новый номер (CRUD CREATE) - ДОБАВЬ ПОД GET */
-router.post('/rooms', async function (req, res) {
+/* POST создать */
+router.post('/rooms', async function(req, res) {
   try {
     var Room = require('../models/room.js').Room;
     const newRoom = new Room({
@@ -31,19 +27,27 @@ router.post('/rooms', async function (req, res) {
       avatar: req.body.avatar || '',
       desc: req.body.desc
     });
-    
     await newRoom.save();
     res.redirect('/rooms');
-  } catch (err) {
-    res.status(500).send('Ошибка создания: ' + err);
+  } catch(err) {
+    res.status(500).send('Ошибка: ' + err);
   }
 });
 
+/* DELETE номер */
+router.delete('/rooms/:id', async function(req, res) {
+  try {
+    var Room = require('../models/room.js').Room;
+    await Room.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch(err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
-
-/* Страница контактов */
-router.get('/contacts', function(req, res, next) {
-  res.send('<h1>Контакты гостиницы Undefined</h1>');
+/* Контакты */
+router.get('/contacts', function(req, res) {
+  res.send('<h1>Контакты</h1>');
 });
 
 module.exports = router;
