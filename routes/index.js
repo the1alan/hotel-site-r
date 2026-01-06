@@ -3,7 +3,7 @@ var router = express.Router();
 
 /* Главная */
 router.get('/', function(req, res) {
-  res.send('<h1>Гостиница</h1>');
+  res.send('<h1>Гостиница Undefined</h1><a href="/rooms">Номера</a>');
 });
 
 /* GET номера Mongoose */
@@ -45,9 +45,34 @@ router.delete('/rooms/:id', async function(req, res) {
   }
 });
 
+/* PUT обновить номер */
+router.put('/rooms/:id', async function(req, res) {
+  try {
+    var Room = require('../models/room.js').Room;
+    await Room.findByIdAndUpdate(req.params.id, {
+      title: req.body.title,
+      nick: req.body.nick,
+      avatar: req.body.avatar,
+      desc: req.body.desc
+    });
+    res.json({ success: true });
+  } catch(err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/* Счётчик посещений SESSION */
+router.get('/counter', function(req, res) {
+  if (!req.session.counter) {
+    req.session.counter = 0;
+  }
+  req.session.counter++;
+  res.send(`<h1>Вы посетили эту страницу ${req.session.counter} раз</h1><a href="/counter"> Назад</a>`);
+});
+
 /* Контакты */
 router.get('/contacts', function(req, res) {
-  res.send('<h1>Контакты</h1>');
+  res.send('<h1>Контакты</h1><p>+370 123 456 789</p><a href="/rooms">Номера</a>');
 });
 
 module.exports = router;
