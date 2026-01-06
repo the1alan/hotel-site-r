@@ -1,4 +1,6 @@
 var mongoose = require('mongoose');
+mongoose.connect('mongodb://127.0.0.1:27017/hotelDB');
+
 var Schema = mongoose.Schema;
 
 var roomSchema = new Schema({
