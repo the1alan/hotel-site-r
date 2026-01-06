@@ -1,6 +1,50 @@
-<% layout('layout/page.ejs') %>
+<% layout('./layout/page.ejs') %>
 
-<div>
-  <h1><%= title %></h1>
-  <p><%= desc %></p>
-</div>
+<h1 class="mb-4"><%= title %></h1>
+
+<% if (typeof rooms !== 'undefined' && rooms.length > 0) { %>
+  <div class="row">
+    <% rooms.forEach(function(room) { %>
+      <div class="col-md-4 mb-4">
+        <div class="card h-100">
+          <% if (room.avatar) { %>
+            <img src="<%= room.avatar %>" class="card-img-top" alt="<%= room.title %>">
+          <% } else { %>
+            <div class="card-img-top bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+              <h3><%= room.title %></h3>
+            </div>
+          <% } %>
+          <div class="card-body">
+            <h5 class="card-title"><%= room.title %></h5>
+            <p class="card-text"><%= room.desc %></p>
+            <% if (room.nick) { %>
+              <a href="/rooms/<%= room.nick %>" class="btn btn-primary">Подробнее</a>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+<% } else { %>
+  <div class="alert alert-info">
+    <p>Номера пока не добавлены. Запустите <code>node createDB.js</code> для загрузки данных.</p>
+  </div>
+<% } %>
+
+<% if (typeof contacts !== 'undefined' && contacts.length > 0) { %>
+  <div class="row">
+    <% contacts.forEach(function(contact) { %>
+      <div class="col-md-6 mb-3">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title"><%= contact.name %></h5>
+            <p class="card-text">
+              <%= contact.phone %><br>
+              <%= contact.email %>
+            </p>
+          </div>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+<% } %>
