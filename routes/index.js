@@ -3,7 +3,13 @@ var router = express.Router();
 
 /* Главная */
 router.get('/', function(req, res) {
-  res.send('<h1>Гостиница Undefined</h1><a href="/rooms">Номера</a>');
+  res.send(`
+    <h1>Гостиница</h1>
+    <a href="/rooms">Номера</a> | 
+    <a href="/contacts">Контакты</a> |
+    <a href="/counter">Счётчик</a> |
+    <a href="/login">🔐 Логин</a>
+  `);
 });
 
 /* GET номера Mongoose */
@@ -45,34 +51,61 @@ router.delete('/rooms/:id', async function(req, res) {
   }
 });
 
-/* PUT обновить номер */
-router.put('/rooms/:id', async function(req, res) {
-  try {
-    var Room = require('../models/room.js').Room;
-    await Room.findByIdAndUpdate(req.params.id, {
-      title: req.body.title,
-      nick: req.body.nick,
-      avatar: req.body.avatar,
-      desc: req.body.desc
-    });
-    res.json({ success: true });
-  } catch(err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-/* Счётчик посещений SESSION */
-router.get('/counter', function(req, res) {
-  if (!req.session.counter) {
-    req.session.counter = 0;
-  }
-  req.session.counter++;
-  res.send(`<h1>Вы посетили эту страницу ${req.session.counter} раз</h1><a href="/counter"> Назад</a>`);
-});
-
 /* Контакты */
 router.get('/contacts', function(req, res) {
-  res.send('<h1>Контакты</h1><p>+370 123 456 789</p><a href="/rooms">Номера</a>');
+  res.send(`
+    <h1>Контакты</h1>
+    <p>📞 +370 123 456 789</p>
+    <a href="/">← Главная</a>
+  `);
+});
+
+/* Счётчик SESSION */
+router.get('/counter', function(req, res) {
+  if (!req.session.counter) req.session.counter = 0;
+  req.session.counter++;
+  res.send(`
+    <h1>Вы посетили ${req.session.counter} раз</h1>
+    <a href="/counter">Обновить</a> | <a href="/">Главная</a>
+  `);
+});
+
+/* 🔐 LOGIN СИСТЕМА */
+router.get('/login', function(req, res) {
+  res.send(`
+    <h1>🔐 Авторизация</h1>
+    <form method="post" action="/login">
+      <input name="username" placeholder="Логин" required><br><br>
+      <input type="password" name="password" placeholder="Пароль" required><br><br>
+      <button>Войти</button>
+    </form>
+    <p><b>admin / 123</b></p>
+    <a href="/">Главная</a>
+  `);
+});
+
+router.post('/login', function(req, res) {
+  if (req.body.username === 'admin' && req.body.password === '123') {
+    req.session.user = { id: 1, username: 'admin' };
+    res.redirect('/profile');
+  } else {
+    res.send('<h1>❌ Неверный логин/пароль!</h1><a href="/login">← Назад</a>');
+  }
+});
+
+router.get('/profile', function(req, res) {
+  if (!req.session.user) return res.redirect('/login');
+  res.send(`
+    <h1>👋 ${req.session.user.username}</h1>
+    <p>ID: ${req.session.user.id}</p>
+    <a href="/logout">🚪 Выход</a> | 
+    <a href="/">Главная</a>
+  `);
+});
+
+router.get('/logout', function(req, res) {
+  req.session.user = null;
+  res.redirect('/');
 });
 
 module.exports = router;
