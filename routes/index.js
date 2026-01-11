@@ -131,17 +131,18 @@ router.get('/admin', requireAuth, async function(req, res) {
     const roomsList = await Room.find({}).sort({ created: -1 });
     let roomsHtml = roomsList.map(room => `
       <li>
-        ${room.title} (${room.nick})
-        <button onclick="deleteRoom('${room._id}')">Удалить</button>
+        <strong>${room.title}</strong> (${room.nick})
+        <button onclick="editRoom('${room._id}')">✏️ Редактировать</button>
+        <button onclick="deleteRoom('${room._id}')">🗑️ Удалить</button>
       </li>
     `).join('');
     
     res.send(`
       <h1>🔧 Админ панель (${req.session.user.username})</h1>
-      <h2>Все номера:</h2>
+      <h2>Управление номерами:</h2>
       <ul>${roomsHtml}</ul>
       
-      <h2>Добавить номер</h2>
+      <h2>➕ Новый номер</h2>
       <form method="post" action="/rooms">
         Название: <input name="title" required><br>
         Ник: <input name="nick" required><br>
@@ -151,17 +152,54 @@ router.get('/admin', requireAuth, async function(req, res) {
       </form>
       
       <script>
+        let editingId = null;
+        function editRoom(id) {
+          editingId = id;
+          // Простая форма редактирования (можно модалку)
+          const title = prompt('Название:');
+          const nick = prompt('Ник:');
+          const avatar = prompt('Аватар URL:');
+          const desc = prompt('Описание:');
+          
+          if (title && nick) {
+            fetch('/rooms/' + id, {
+              method: 'PUT',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({title, nick, avatar, desc})
+            }).then(() => location.reload());
+          }
+        }
+        
         function deleteRoom(id) {
-          fetch('/rooms/' + id, {method: 'DELETE'})
-            .then(() => location.reload());
+          if (confirm('Удалить?')) {
+            fetch('/rooms/' + id, {method: 'DELETE'})
+              .then(() => location.reload());
+          }
         }
       </script>
       
-      <a href="/profile">Профиль</a> | 
-      <a href="/logout">Выход</a>
+      <a href="/profile">👤 Профиль</a> | 
+      <a href="/logout">🚪 Выход</a>
     `);
   } catch(err) {
     res.status(500).send('Ошибка: ' + err);
+  }
+});
+
+
+/* ✏️ PUT редактировать номер */
+router.put('/rooms/:id', requireAuth, async function(req, res) {
+  try {
+    var Room = require('../models/room.js').Room;
+    await Room.findByIdAndUpdate(req.params.id, {
+      title: req.body.title,
+      nick: req.body.nick,
+      avatar: req.body.avatar,
+      desc: req.body.desc
+    });
+    res.json({ success: true });
+  } catch(err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
