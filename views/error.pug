@@ -1,0 +1,12 @@
+doctype html
+html
+  head
+    title= error.status || 500 + ' Error'
+    link(rel='stylesheet', href='/stylesheets/style.css')
+  body
+    div(class='error-container')
+      h1= message
+      p Что-то пошло не так...
+      if error.status === 404
+        h2 Страница не найдена
+      a(href='/rooms') ← Вернуться к номерам
