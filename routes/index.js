@@ -2,6 +2,10 @@ var express = require('express');
 var router = express.Router();
 const { Room } = require('../models/db.js');
 
+router.get('/test-route', function(req, res) {
+  res.send('ROUTES WORK');
+});
+
 // 🛡️ Middleware авторизации
 function requireAuth(req, res, next) {
   if (!req.session.user) {
