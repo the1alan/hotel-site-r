@@ -1,4 +1,11 @@
 node_modules
 npm-debug.log
 .git
-.DS_Store
+.gitignore
+README.md
+Dockerfile
+docker-compose.yml
+.env
+.nyc_output
+coverage
+docker-compose.prod.yml
