@@ -1,49 +1,46 @@
-console.log('THIS APP.JS IS RUNNING');
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var session = require('express-session');  // ← ВВЕРХУ
+const express = require('express');
+const path = require('path');
+const db = require('./db');
+const mongoose = require('mongoose');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const app = express();
 
-var app = express();
-
+// Set view engine
+app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
 
-app.use(logger('dev'));
+// Middleware
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
 
-// SESSION ЗДЕСЬ!
+// Session middleware
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
+
 app.use(session({
-  secret: 'hotel-secret-key',
-  cookie: { maxAge: 1000 * 60 * 60 * 24 },
-  resave: false,
-  saveUninitialized: false
+    secret: 'hotel-secret-key',
+    resave: true,
+    saveUninitialized: true,
+    store: MongoStore.create({ mongoUrl: 'mongodb://localhost:27017/hotel-site' }),
+    cookie: { maxAge: 1000 * 60 * 60 * 24 } // 24 часа
 }));
 
-app.use(express.static(path.join(__dirname, 'public')));
+// User middleware
+const createUser = require('./middleware/createUser');
+app.use(createUser);
 
-app.get('/test', function(req, res) {
-  res.send('APP.JS WORKS');
-});
+// Routes
+const indexRoutes = require('./routes/index');
+app.use('/', indexRoutes);
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+const authRoutes = require('./routes/auth');
+app.use('/auth', authRoutes);
 
-app.use(function(req, res, next) {
-  next(createError(404));
-});
-
-app.use(function(err, req, res, next) {
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-  res.status(err.status || 500).send(`Ошибка ${err.status || 500}: ${err.message}`);
+// Listen
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
 
 module.exports = app;
