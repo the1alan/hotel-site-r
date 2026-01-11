@@ -1,16 +1,31 @@
 var express = require('express');
 var router = express.Router();
 
+// 🛡️ Middleware - проверка авторизации
+function requireAuth(req, res, next) {
+  if (!req.session.user) {
+    return res.redirect('/login?from=' + req.originalUrl);
+  }
+  next();
+}
+
+
 /* Главная */
 router.get('/', function(req, res) {
+  const loginLink = req.session.user ? 
+    `<a href="/profile">👋 ${req.session.user.username}</a>` : 
+    `<a href="/login">🔐 Логин</a>`;
+    
   res.send(`
     <h1>Гостиница</h1>
+    ${loginLink} |
     <a href="/rooms">Номера</a> | 
     <a href="/contacts">Контакты</a> |
     <a href="/counter">Счётчик</a> |
-    <a href="/login">🔐 Логин</a>
+    <a href="/admin">🔧 Админ</a>
   `);
 });
+
 
 /* GET номера Mongoose */
 router.get('/rooms', async function(req, res) {
@@ -106,6 +121,48 @@ router.get('/profile', function(req, res) {
 router.get('/logout', function(req, res) {
   req.session.user = null;
   res.redirect('/');
+});
+
+
+/* 🔧 Админ панель - ТОЛЬКО ДЛЯ ADMIN */
+router.get('/admin', requireAuth, async function(req, res) {
+  try {
+    var Room = require('../models/room.js').Room;
+    const roomsList = await Room.find({}).sort({ created: -1 });
+    let roomsHtml = roomsList.map(room => `
+      <li>
+        ${room.title} (${room.nick})
+        <button onclick="deleteRoom('${room._id}')">Удалить</button>
+      </li>
+    `).join('');
+    
+    res.send(`
+      <h1>🔧 Админ панель (${req.session.user.username})</h1>
+      <h2>Все номера:</h2>
+      <ul>${roomsHtml}</ul>
+      
+      <h2>Добавить номер</h2>
+      <form method="post" action="/rooms">
+        Название: <input name="title" required><br>
+        Ник: <input name="nick" required><br>
+        Аватар: <input name="avatar"><br>
+        Описание: <textarea name="desc"></textarea><br>
+        <button>Добавить</button>
+      </form>
+      
+      <script>
+        function deleteRoom(id) {
+          fetch('/rooms/' + id, {method: 'DELETE'})
+            .then(() => location.reload());
+        }
+      </script>
+      
+      <a href="/profile">Профиль</a> | 
+      <a href="/logout">Выход</a>
+    `);
+  } catch(err) {
+    res.status(500).send('Ошибка: ' + err);
+  }
 });
 
 module.exports = router;
