@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+const { Room } = require('../models/db.js');
 
 // 🛡️ Middleware авторизации
 function requireAuth(req, res, next) {
@@ -23,25 +24,23 @@ router.get('/', function(req, res) {
     <a href="/counter">🔢 Счётчик</a> |
     <a href="/admin">🔧 Админ</a>
     <hr>
-    <small>Docker tc_15</small>
+    <small>Render.com 🚀 + MongoDB Atlas ☁️</small>
   `);
 });
 
 /* GET номера */
 router.get('/rooms', async function(req, res) {
   try {
-    var Room = require('../models/db.js').Room;
     const roomsList = await Room.find({}).sort({ created: -1 });
-    res.render('hotel', { title: 'Номера (MongoDB)', rooms: roomsList });
+    res.render('hotel', { title: 'Номера (Atlas)', rooms: roomsList });
   } catch(err) {
-    res.status(500).send('Ошибка MongoDB: ' + err.message);
+    res.status(500).send('Ошибка MongoDB Atlas: ' + err.message);
   }
 });
 
 /* POST создать */
 router.post('/rooms', async function(req, res) {
   try {
-    var Room = require('../models/db.js').Room;
     const newRoom = new Room({
       title: req.body.title,
       nick: req.body.nick,
@@ -58,7 +57,6 @@ router.post('/rooms', async function(req, res) {
 /* PUT редактировать */
 router.put('/rooms/:id', requireAuth, async function(req, res) {
   try {
-    var Room = require('../models/db.js').Room;
     await Room.findByIdAndUpdate(req.params.id, {
       title: req.body.title,
       nick: req.body.nick,
@@ -74,7 +72,6 @@ router.put('/rooms/:id', requireAuth, async function(req, res) {
 /* DELETE номер */
 router.delete('/rooms/:id', async function(req, res) {
   try {
-    var Room = require('../models/db.js').Room;
     await Room.findByIdAndDelete(req.params.id);
     res.json({ success: true });
   } catch(err) {
@@ -143,7 +140,6 @@ router.get('/logout', function(req, res) {
 /* 🔧 Админ панель */
 router.get('/admin', requireAuth, async function(req, res) {
   try {
-    var Room = require('../models/db.js').Room;
     const roomsList = await Room.find({}).sort({ created: -1 });
     let roomsHtml = roomsList.map(room => `
       <li>
