@@ -1,9 +1,6 @@
 var express = require('express');
 var router = express.Router();
 const { Room } = require('../models/db.js');
-var indexRouter = require('./routes/index');
-app.use('/', indexRouter);
-
 
 // 🛡️ Middleware авторизации
 function requireAuth(req, res, next) {
